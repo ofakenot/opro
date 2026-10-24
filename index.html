@@ -83,7 +83,7 @@ h1{font-weight:400;font-size:clamp(2.7rem,6vw,5.4rem);line-height:1.04;letter-sp
 .sub{margin-top:24px;color:var(--mute);font-size:clamp(1.02rem,1.5vw,1.3rem);line-height:1.5;max-width:34ch}
 
 .htext{position:relative;z-index:1}
-.hero video{position:absolute;top:0;right:0;width:min(76%,1320px);height:calc(100% + var(--nav));object-fit:cover;object-position:60% 35%;z-index:-2;
+.hero video,.hero .vid-img{position:absolute;top:0;right:0;width:min(76%,1320px);height:calc(100% + var(--nav));object-fit:cover;object-position:60% 35%;z-index:-2;
   -webkit-mask-image:linear-gradient(90deg,transparent 0%,#000 30%),linear-gradient(0deg,transparent 0%,#000 18%,#000 86%,transparent 100%);-webkit-mask-composite:source-in;
   mask-image:linear-gradient(90deg,transparent 0%,#000 30%),linear-gradient(0deg,transparent 0%,#000 18%,#000 86%,transparent 100%);mask-composite:intersect}
 
@@ -91,7 +91,7 @@ h1{font-weight:400;font-size:clamp(2.7rem,6vw,5.4rem);line-height:1.04;letter-sp
 @media(max-width:860px){
   .burger{display:block}
   .site #lang{display:none}
-  .hero video{top:0;width:100%;height:calc(58svh + var(--nav));object-position:58% 50%;-webkit-mask-image:linear-gradient(0deg,transparent 0%,#000 26%,#000 84%,transparent 100%);mask-image:linear-gradient(0deg,transparent 0%,#000 26%,#000 84%,transparent 100%)}
+  .hero video,.hero .vid-img{top:0;width:100%;height:calc(58svh + var(--nav));object-position:58% 50%;-webkit-mask-image:linear-gradient(0deg,transparent 0%,#000 26%,#000 84%,transparent 100%);mask-image:linear-gradient(0deg,transparent 0%,#000 26%,#000 84%,transparent 100%)}
   .navpill{top:14px;padding:10px 14px}
   .navpill .pl{display:none}
   .navpill .brand svg{width:auto;height:28px}
@@ -419,7 +419,7 @@ h1{font-weight:400;font-size:clamp(2.7rem,6vw,5.4rem);line-height:1.04;letter-sp
 .tech-pin{position:sticky;top:0;height:100svh;overflow:hidden}
 .tech-frame{--k:0;position:absolute;inset:0;overflow:hidden;background:radial-gradient(80% 70% at 50% 50%,#0f1a28,#06090e);
   clip-path:inset(calc(var(--k) * 16%) calc(var(--k) * 22%) round calc(var(--k) * 28px));-webkit-clip-path:inset(calc(var(--k) * 16%) calc(var(--k) * 22%) round calc(var(--k) * 28px))}
-.tech-frame video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scale(calc(1 + var(--k) * .12))}
+.tech-frame video,.tech-frame .vid-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scale(calc(1 + var(--k) * .12))}
 .tech-shade{position:absolute;inset:0;pointer-events:none;
   background:linear-gradient(0deg,#0a1626 0%,rgba(10,22,38,.85) 8%,rgba(10,22,38,0) 26%),linear-gradient(90deg,rgba(5,7,11,.88) 0%,rgba(5,7,11,.55) 38%,rgba(5,7,11,0) 68%),linear-gradient(0deg,rgba(5,7,11,.85) 0%,rgba(5,7,11,0) 45%),linear-gradient(180deg,rgba(5,7,11,.55) 0%,rgba(5,7,11,0) 22%);
   opacity:calc(1 - var(--k) * .7)}
@@ -463,7 +463,7 @@ h1{font-weight:400;font-size:clamp(2.7rem,6vw,5.4rem);line-height:1.04;letter-sp
 .vault{position:relative;height:240vh;background:var(--ink)}
 .vault-pin{position:sticky;top:0;height:100svh;overflow:hidden}
 .vault-frame{--s:0;position:absolute;inset:0;overflow:hidden;background:#07101b}
-.vault-frame video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scale(calc(1.08 - var(--s) * .08))}
+.vault-frame video,.vault-frame .vid-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scale(calc(1.08 - var(--s) * .08))}
 .vault-lock,.vault-scan{display:none}
 .js .vault-lock{display:block;position:absolute;inset:0;z-index:1;
   clip-path:inset(calc(var(--s) * 100%) 0 0 0);-webkit-clip-path:inset(calc(var(--s) * 100%) 0 0 0);
@@ -566,7 +566,7 @@ h1{font-weight:400;font-size:clamp(2.7rem,6vw,5.4rem);line-height:1.04;letter-sp
   <section class="hero" id="top">
     <!-- VÍDEO DO HERO: coloque o seu arquivo em  media/herovideo.mp4  (mesma pasta do index.html).
          Sem o arquivo, o hero fica com o fundo escuro e o resto da página funciona normal. -->
-    <video id="vHero" muted loop playsinline autoplay preload="auto" aria-hidden="true" tabindex="-1">
+    <video id="vHero" muted loop playsinline webkit-playsinline autoplay preload="auto" disablepictureinpicture disableremoteplayback aria-hidden="true" tabindex="-1">
       <source src="media/heromapa.mp4" type="video/mp4">
     </video>
     <div class="htext">
@@ -1022,6 +1022,17 @@ brand.addEventListener('mouseenter',function(){
 })();
 
 /* tecnologia: abertura do vídeo com a rolagem e reprodução automática no iPhone e no Android */
+/* plano B do iPhone: quando o iOS se recusa a tocar o vídeo sozinho (ex.: modo Pouca Energia),
+   o Safari ainda aceita o mesmo arquivo .mp4 como imagem, que toca sozinha e em loop, sem toque.
+   Em navegadores que não aceitam, a imagem falha em silêncio e nada muda. */
+window.oproVidImg=function(v,done){
+  if(!v||v._imgTried)return;v._imgTried=true;
+  var s=v.querySelector('source'),src=(s&&s.src)||v.currentSrc;if(!src)return;
+  var im=new Image();im.className='vid-img';im.alt='';im.setAttribute('aria-hidden','true');im.decoding='async';
+  im.onload=function(){if(!v.paused)return;v.parentNode.insertBefore(im,v);v.pause();v.style.display='none';v._asImg=true;if(done)done()};
+  im.src=src;
+};
+
 /* proteção de dados: a varredura acompanha a rolagem e decifra o vídeo */
 (function(){
   var sec=document.getElementById('protection');if(!sec)return;
@@ -1046,13 +1057,17 @@ brand.addEventListener('mouseenter',function(){
 
   v.muted=true;v.defaultMuted=true;v.setAttribute('muted','');v.setAttribute('playsinline','');v.setAttribute('webkit-playsinline','');
   var visible=false;
-  function play(){var pr=v.play();if(pr&&pr.then)pr.then(function(){frame.classList.remove('blocked')}).catch(function(){if(visible)frame.classList.add('blocked')})}
+  function play(){if(v._asImg)return;var pr=v.play();if(pr&&pr.then)pr.then(function(){frame.classList.remove('blocked')}).catch(function(){if(!visible)return;frame.classList.add('blocked');oproVidImg(v,function(){frame.classList.remove('blocked')})})}
+  /* se ficar parado na tela por 2,5 s sem erro, também tenta o plano B */
+  setInterval(function(){if(visible&&v.paused&&!v._asImg&&document.visibilityState==='visible'){v._still=(v._still||0)+1;if(v._still>=5)oproVidImg(v,function(){frame.classList.remove('blocked')})}else v._still=0},500);
   if('IntersectionObserver' in window){
     new IntersectionObserver(function(es){es.forEach(function(e){visible=e.isIntersecting;
-      if(visible){if(v.preload!=='auto'){v.preload='auto';v.load()}play()}else v.pause()})},{rootMargin:'300px 0px'}).observe(sec);
-  }else{v.preload='auto';play()}
+      if(visible){if(v.paused)play()}else v.pause()})},{rootMargin:'300px 0px'}).observe(sec);
+  }else{visible=true;play()}
   v.addEventListener('loadeddata',function(){if(visible)play()});
-  ['touchstart','pointerdown','scroll','keydown'].forEach(function(ev){addEventListener(ev,function(){if(visible&&v.paused)play()},{passive:true})});
+  ['touchend','click','pointerup','keydown','scroll'].forEach(function(ev){addEventListener(ev,function(){if(visible&&v.paused)play()},{passive:true})});
+  addEventListener('pageshow',function(){if(visible&&v.paused)play()});
+  v.playsInline=true;v.addEventListener('loadedmetadata',function(){if(visible&&v.paused)play()});
   btn.addEventListener('click',play);
   document.addEventListener('visibilitychange',function(){if(!document.hidden&&visible)play()});
 })();
@@ -1078,15 +1093,19 @@ brand.addEventListener('mouseenter',function(){
   /* o iPhone só toca sozinho se o vídeo estiver mudo e dentro da página */
   v.muted=true;v.defaultMuted=true;v.setAttribute('muted','');v.setAttribute('playsinline','');v.setAttribute('webkit-playsinline','');
   var visible=false;
-  function play(){var pr=v.play();if(pr&&pr.then)pr.then(function(){frame.classList.remove('blocked')}).catch(function(){if(visible)frame.classList.add('blocked')})}
+  function play(){if(v._asImg)return;var pr=v.play();if(pr&&pr.then)pr.then(function(){frame.classList.remove('blocked')}).catch(function(){if(!visible)return;frame.classList.add('blocked');oproVidImg(v,function(){frame.classList.remove('blocked')})})}
+  /* se ficar parado na tela por 2,5 s sem erro, também tenta o plano B */
+  setInterval(function(){if(visible&&v.paused&&!v._asImg&&document.visibilityState==='visible'){v._still=(v._still||0)+1;if(v._still>=5)oproVidImg(v,function(){frame.classList.remove('blocked')})}else v._still=0},500);
   /* só carrega e toca quando a seção chega perto da tela; pausa fora dela para poupar bateria e dados */
   if('IntersectionObserver' in window){
     new IntersectionObserver(function(es){es.forEach(function(e){visible=e.isIntersecting;
-      if(visible){if(v.preload!=='auto'){v.preload='auto';v.load()}play()}else v.pause()})},{rootMargin:'300px 0px'}).observe(sec);
-  }else{v.preload='auto';play()}
+      if(visible){if(v.paused)play()}else v.pause()})},{rootMargin:'300px 0px'}).observe(sec);
+  }else{visible=true;play()}
   v.addEventListener('loadeddata',function(){if(visible)play()});
   /* qualquer toque ou rolagem libera a reprodução nos navegadores mais restritos */
-  ['touchstart','pointerdown','scroll','keydown'].forEach(function(ev){addEventListener(ev,function(){if(visible&&v.paused)play()},{passive:true})});
+  ['touchend','click','pointerup','keydown','scroll'].forEach(function(ev){addEventListener(ev,function(){if(visible&&v.paused)play()},{passive:true})});
+  addEventListener('pageshow',function(){if(visible&&v.paused)play()});
+  v.playsInline=true;v.addEventListener('loadedmetadata',function(){if(visible&&v.paused)play()});
   btn.addEventListener('click',play);
   document.addEventListener('visibilitychange',function(){if(!document.hidden&&visible)play()});
 })();
@@ -1103,23 +1122,21 @@ menu.addEventListener('click',function(e){if(e.target.closest('a'))setMenu(false
 addEventListener('keydown',function(e){if(e.key==='Escape')setMenu(false)});
 matchMedia('(min-width:861px)').addEventListener('change',function(){setMenu(false)});
 
-/* vídeo de fundo: sempre tenta tocar, mesmo com "reduzir animações" ligado no sistema */
-var v=document.getElementById('vHero'),blobTried=false;
-v.muted=true;v.defaultMuted=true;v.setAttribute('playsinline','');
-function tryPlay(){var p=v.play();if(p&&p.catch)p.catch(function(){})}
-v.addEventListener('loadeddata',tryPlay);v.addEventListener('canplay',tryPlay);
-/* autoplay bloqueado (ex.: economia de bateria no iPhone): toca no primeiro toque, tecla ou rolagem */
-['pointerdown','touchstart','keydown','wheel','scroll'].forEach(function(ev){addEventListener(ev,tryPlay,{passive:true,once:true})});
-/* plano B: se o navegador não conseguir abrir o arquivo direto, baixa e toca por blob */
-function viaBlob(){
-  if(blobTried)return;blobTried=true;
-  var url=v.querySelector('source').src;
-  fetch(url).then(function(r){return r.blob()}).then(function(b){v.src=URL.createObjectURL(b);v.load();tryPlay()}).catch(function(){});
-}
-v.addEventListener('error',function(e){if(e.target===v||!e.target.nextElementSibling)viaBlob()},true);
-setTimeout(function(){if(v.readyState<2)viaBlob()},3000);
+/* vídeo de fundo: no iPhone só toca sozinho se estiver mudo, inline e na tela.
+   Se o sistema bloquear (ex.: modo economia de bateria), toca no primeiro toque ou clique. */
+var v=document.getElementById('vHero'),onScreen=true;
+v.muted=true;v.defaultMuted=true;v.playsInline=true;
+v.setAttribute('muted','');v.setAttribute('playsinline','');v.setAttribute('webkit-playsinline','');
+function tryPlay(){if(!onScreen||!v.paused||v._asImg)return;var p=v.play();if(p&&p.catch)p.catch(function(){oproVidImg(v)})}
+setTimeout(function(){if(onScreen&&v.paused&&!v._asImg)oproVidImg(v)},2500);
+['loadedmetadata','loadeddata','canplay'].forEach(function(ev){v.addEventListener(ev,tryPlay)});
+/* toque, clique e tecla contam como gesto no iOS; os ouvintes ficam ativos até o vídeo tocar */
+['touchend','click','pointerup','keydown','scroll'].forEach(function(ev){addEventListener(ev,tryPlay,{passive:true})});
+addEventListener('pageshow',tryPlay);
+document.addEventListener('visibilitychange',function(){if(!document.hidden)tryPlay()});
 /* pausa fora da tela para poupar bateria */
-new IntersectionObserver(function(e){if(e[0].isIntersecting)tryPlay();else v.pause()},{threshold:.05}).observe(v);
+if('IntersectionObserver' in window)new IntersectionObserver(function(e){onScreen=e[0].isIntersecting;if(onScreen)tryPlay();else if(!v._asImg)v.pause()},{threshold:.05}).observe(v);
+tryPlay();
 
 })();
 </script>
