@@ -553,6 +553,21 @@ h1{font-weight:400;font-size:clamp(2.7rem,6vw,5.4rem);line-height:1.04;letter-sp
   .foot .foot-lang{gap:0}
   .foot-bot{margin-top:32px;padding-top:18px;font-size:12px;gap:8px 16px;justify-content:space-between;align-items:center}
 }
+
+/* rodapé centralizado no celular */
+@media(max-width:560px){
+  .foot{text-align:center}
+  .foot-top{grid-template-columns:1fr;justify-items:center}
+  .foot-brand{display:flex;flex-direction:column;align-items:center;width:100%;order:-2;padding-bottom:28px}
+  .foot-brand p{margin-left:auto;margin-right:auto}
+  .foot-top>.foot-col,.foot-top>.foot-col:nth-child(2),.foot-top>.foot-col:nth-child(3),.foot-top>.foot-col:nth-child(4){grid-column:1 / -1;grid-row:auto;order:0;width:100%;align-items:center;display:flex;flex-direction:column}
+  .foot-top>.foot-col:nth-child(3){order:-1}
+  .foot-top>.foot-col:nth-child(3) h4{grid-column:auto}
+  .foot-col{padding:22px 0;border-bottom:1px solid rgba(var(--fg),.08)}
+  .foot-col:last-child{border-bottom:0}
+  .foot .foot-lang{align-items:center;flex-direction:row;gap:18px;justify-content:center}
+  .foot-bot{flex-direction:column;align-items:center;justify-content:center;text-align:center}
+}
 </style>
 </head>
 <body>
