@@ -786,7 +786,7 @@ h1{font-weight:400;font-size:clamp(2.7rem,6vw,5.4rem);line-height:1.04;letter-sp
       <p class="sub" data-i18n="world.sub">Wherever there is data, OPRO operates. The same platform, the same intelligence and the same security in any country, in any time zone, at any hour.</p>
     </div>
     <figure class="cine">
-      <!-- planeta girando, desenhado em canvas com os países reais (media/globe); logo e textos em media/opro-marca*.png -->
+      <!-- planeta girando em WebGL com a textura media/globe/earth-bw.jpg; logo e textos em media/opro-marca*.png -->
       <canvas id="globe" role="img" aria-label="Planet Earth seen from space" data-i18n-aria="world.alt"></canvas>
       <picture>
         <source media="(max-width:860px)" srcset="media/opro-marca-mobile.png">
@@ -826,9 +826,6 @@ h1{font-weight:400;font-size:clamp(2.7rem,6vw,5.4rem);line-height:1.04;letter-sp
 </footer>
 
 
-<script src="media/globe/d3-array.min.js"></script>
-<script src="media/globe/d3-geo.min.js"></script>
-<script src="media/globe/topojson-client.min.js"></script>
 <script>
 (function(){
 var root=document.documentElement,site=document.getElementById('site');
@@ -1175,44 +1172,52 @@ tryPlay();
 
 })();
 
-/* planeta girando: países reais (world-atlas 50m), projeção ortográfica, em preto e branco com luz de esfera */
+/* planeta girando: textura real da Terra (preto e branco) projetada numa esfera em WebGL, com luz e atmosfera */
 (function(){
-  var cv=document.getElementById('globe');if(!cv||!cv.getContext)return;
-  var ctx=cv.getContext('2d'),mq=matchMedia('(max-width:860px)'),still=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var cv=document.getElementById('globe');if(!cv)return;
+  var gl=cv.getContext('webgl',{premultipliedAlpha:true,alpha:true,antialias:false});if(!gl)return;
+  var mq=matchMedia('(max-width:860px)'),still=matchMedia('(prefers-reduced-motion: reduce)').matches;
   /* posição do planeta em relação à largura da imagem da marca (igual à arte original) */
   var GEO={d:{cx:.48962,cy:.92101,r:.71659},m:{cx:.48791,cy:2.40842,r:1.37556}};
-  var land,borders,proj,path,W,H,dpr,lam=72,last=0,vis=true,raf=0;
-  function size(){var b=cv.getBoundingClientRect();dpr=Math.min(window.devicePixelRatio||1,2);W=b.width;H=b.height;cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);
-    var g=mq.matches?GEO.m:GEO.d;proj=d3.geoOrthographic().scale(g.r*W).translate([g.cx*W,g.cy*W]).clipAngle(90).precision(.4);path=d3.geoPath(proj,ctx);}
-  function draw(){
-    if(!proj)return;var g=mq.matches?GEO.m:GEO.d,cx=g.cx*W,cy=g.cy*W,r=g.r*W;
-    ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);
-    proj.rotate([lam,38,0]);
-    var lx=cx+r*.42,ly=cy-r*.9;   /* luz vindo do alto à direita */
-    /* oceano */
-    var o=ctx.createRadialGradient(lx,ly,r*.05,cx,cy,r*1.05);o.addColorStop(0,'#6b717a');o.addColorStop(.55,'#3c4149');o.addColorStop(1,'#1f2329');
-    ctx.beginPath();path({type:'Sphere'});ctx.fillStyle=o;ctx.fill();
-    /* continentes */
-    var l=ctx.createRadialGradient(lx,ly,r*.05,cx,cy,r*1.05);l.addColorStop(0,'#f4f5f7');l.addColorStop(.55,'#c9cdd3');l.addColorStop(1,'#8d939b');
-    ctx.beginPath();path(land);ctx.fillStyle=l;ctx.fill();
-    ctx.lineJoin='round';
-    ctx.beginPath();path(borders);ctx.strokeStyle='rgba(20,24,32,.38)';ctx.lineWidth=.7;ctx.stroke();
-    ctx.beginPath();path(land);ctx.strokeStyle='rgba(15,18,24,.55)';ctx.lineWidth=.8;ctx.stroke();
-    /* volume: escurece nas bordas e no lado oposto à luz */
-    var s=ctx.createRadialGradient(lx,ly,r*.1,cx,cy,r);s.addColorStop(0,'rgba(255,255,255,.10)');s.addColorStop(.6,'rgba(0,0,0,0)');s.addColorStop(.93,'rgba(0,0,0,.18)');s.addColorStop(1,'rgba(0,0,0,.32)');
-    ctx.beginPath();path({type:'Sphere'});ctx.fillStyle=s;ctx.fill();
-    /* atmosfera fina */
-    ctx.save();ctx.beginPath();path({type:'Sphere'});ctx.shadowColor='rgba(255,255,255,.9)';ctx.shadowBlur=14;ctx.strokeStyle='rgba(255,255,255,.85)';ctx.lineWidth=1.4;ctx.stroke();ctx.restore();
-  }
-  function tick(t){raf=0;if(!vis)return;if(last)lam+=(t-last)*.004;last=t;draw();raf=requestAnimationFrame(tick);}
+  var VS='attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}';
+  var FS=['precision highp float;uniform sampler2D tex;uniform vec2 C;uniform float R,LAM,PHI,DPR;',
+  'const float PI=3.14159265;',
+  'void main(){vec2 q=vec2(gl_FragCoord.x,gl_FragCoord.y)/DPR;vec2 d=(q-C)/R;float rho=length(d);',
+  ' float od=(rho-1.)*R;',
+  ' if(rho>1.){float h=.35*exp(-od/4.)+.12*exp(-od/25.);vec3 c=vec3(232.,233.,236.)/255.;gl_FragColor=vec4(c*h,h);return;}',
+  ' float z=sqrt(max(0.,1.-rho*rho));float c=asin(min(rho,1.));',
+  ' float lat=asin(clamp(cos(c)*sin(PHI)+(rho>0.?d.y*sin(c)*cos(PHI)/rho:0.),-1.,1.));',
+  ' float lon=LAM+atan(d.x*sin(c),rho*cos(c)*cos(PHI)-d.y*sin(c)*sin(PHI));',
+  ' vec2 uv=vec2(fract((lon+PI)/(2.*PI)),(PI*.5-lat)/PI);',
+  ' float t=texture2D(tex,uv).r;',
+  ' vec3 n=vec3(d,z);vec3 L=normalize(vec3(.55,.55,.63));',
+  ' float sh=(.72+.38*pow(max(dot(n,L),0.),.7))*(.78+.22*pow(z,.35));t*=sh;',
+  ' float a=exp(-pow((1.-rho)*R/9.,2.));t=mix(t,238./255.,a*.55);',
+  ' float edge=clamp((1.-rho)*R/1.2+.5,0.,1.);float h=.35;',
+  ' vec3 col=vec3(t,t+1./255.,t+4./255.);gl_FragColor=vec4(col*edge+vec3(232.,233.,236.)/255.*h*(1.-edge),edge+h*(1.-edge));}'].join('\n');
+  function sh(t,src){var s=gl.createShader(t);gl.shaderSource(s,src);gl.compileShader(s);return s;}
+  var pr=gl.createProgram();gl.attachShader(pr,sh(gl.VERTEX_SHADER,VS));gl.attachShader(pr,sh(gl.FRAGMENT_SHADER,FS));gl.linkProgram(pr);
+  if(!gl.getProgramParameter(pr,gl.LINK_STATUS))return;gl.useProgram(pr);
+  var b=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
+  var lp=gl.getAttribLocation(pr,'p');gl.enableVertexAttribArray(lp);gl.vertexAttribPointer(lp,2,gl.FLOAT,false,0,0);
+  var U={};['C','R','LAM','PHI','DPR','tex'].forEach(function(k){U[k]=gl.getUniformLocation(pr,k)});
+  var W,H,dpr,ready=false,lam=-1.6,last=0,vis=true,raf=0;
+  function size(){var r=cv.getBoundingClientRect();dpr=Math.min(window.devicePixelRatio||1,2);W=r.width;H=r.height;cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);gl.viewport(0,0,cv.width,cv.height);}
+  function draw(){if(!ready)return;var g=mq.matches?GEO.m:GEO.d;
+    gl.uniform2f(U.C,g.cx*W,H-g.cy*W);gl.uniform1f(U.R,g.r*W);gl.uniform1f(U.LAM,lam);gl.uniform1f(U.PHI,-.5);gl.uniform1f(U.DPR,dpr);
+    gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);gl.drawArrays(gl.TRIANGLE_STRIP,0,4);}
+  function tick(t){raf=0;if(!vis)return;if(last)lam+=(t-last)*.00007;last=t;draw();raf=requestAnimationFrame(tick);}
   function start(){if(still){draw();return}if(!raf){last=0;raf=requestAnimationFrame(tick);}}
-  fetch('media/globe/countries-50m.json').then(function(r){return r.json()}).then(function(w){
-    land=topojson.feature(w,w.objects.land);borders=topojson.mesh(w,w.objects.countries,function(a,b){return a!==b});
-    size();start();
+  var img=new Image();img.decoding='async';
+  img.onload=function(){var t=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,t);
+    gl.texImage2D(gl.TEXTURE_2D,0,gl.LUMINANCE,gl.LUMINANCE,gl.UNSIGNED_BYTE,img);
+    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+    gl.uniform1i(U.tex,0);ready=true;size();start();
     if('IntersectionObserver'in window)new IntersectionObserver(function(e){vis=e[0].isIntersecting;if(vis)start();}).observe(cv);
     addEventListener('resize',function(){size();draw();});
-    if(mq.addEventListener)mq.addEventListener('change',function(){size();draw();});
-  }).catch(function(){});
+    if(mq.addEventListener)mq.addEventListener('change',function(){size();draw();});};
+  img.src='media/globe/earth-bw.jpg';
 })();
 </script>
 </body>
