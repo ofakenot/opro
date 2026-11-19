@@ -245,7 +245,7 @@ h1{font-weight:400;font-size:clamp(2.7rem,6vw,5.4rem);line-height:1.04;letter-sp
 /* inscrição: formulário em vidro fosco, com luzes suaves atrás para o vidro aparecer */
 .join{position:relative;background:transparent;padding:clamp(110px,17vh,180px) var(--gut) 0;text-align:center;overflow-x:clip;overflow-y:visible;isolation:isolate}
 .join::before,.join::after{content:"";position:absolute;z-index:-1;border-radius:50%;filter:blur(70px);pointer-events:none}
-.join::before{width:min(560px,80vw);aspect-ratio:1;left:50%;top:48%;translate:-95% -20%;background:radial-gradient(circle,rgba(47,98,170,.55) 0%,rgba(47,98,170,0) 68%);animation:drift 18s ease-in-out infinite alternate}
+.join::before{width:min(560px,80vw);aspect-ratio:1;left:50%;top:48%;translate:-95% -20%;background:radial-gradient(circle,rgba(120,160,235,.28) 0%,rgba(120,160,235,0) 68%);animation:drift 18s ease-in-out infinite alternate}
 .join::after{width:min(460px,70vw);aspect-ratio:1;left:50%;top:58%;translate:5% -10%;background:radial-gradient(circle,rgba(159,208,255,.3) 0%,rgba(159,208,255,0) 68%);animation:drift 22s ease-in-out infinite alternate-reverse}
 @keyframes drift{to{transform:translate(40px,-30px) scale(1.1)}}
 .join-copy{max-width:640px;margin:0 auto}
@@ -518,21 +518,21 @@ h1{font-weight:400;font-size:clamp(2.7rem,6vw,5.4rem);line-height:1.04;letter-sp
 .tech-frame video,.tech-frame .vid-img,.tech-shade,.vault-frame video,.vault-frame .vid-img,.js .vault-lock,.vault-shade{-webkit-mask-image:linear-gradient(180deg,transparent 0%,transparent 7%,#000 var(--fa,12%),#000 calc(100% - var(--fb,12%)),transparent 93%,transparent 100%);mask-image:linear-gradient(180deg,transparent 0%,transparent 7%,#000 var(--fa,12%),#000 calc(100% - var(--fb,12%)),transparent 93%,transparent 100%);}
 
 /* ===== vidro claro estilo iOS: branco leve, semitransparente, desfoque do fundo ===== */
-:root{--glass:linear-gradient(135deg,rgba(255,255,255,.58) 0%,rgba(255,255,255,.26) 100%);--glass-bd:rgba(255,255,255,.7);
-  --glass-sh:0 10px 40px rgba(31,52,96,.10),0 1px 2px rgba(31,52,96,.06),inset 0 1px 0 rgba(255,255,255,.9),inset 0 -1px 0 rgba(255,255,255,.3);
-  --glass-fx:blur(24px) saturate(180%)}
+:root{--glass:linear-gradient(135deg,rgba(255,255,255,.26) 0%,rgba(255,255,255,.1) 100%);--glass-bd:rgba(255,255,255,.45);
+  --glass-sh:inset 0 1px 0 rgba(255,255,255,.55);
+  --glass-fx:blur(20px) saturate(160%)}
 .glass,.secu-grid>li,.navpill,.vault-state,.tech-play,.vault-play{background:var(--glass);border:1px solid var(--glass-bd);box-shadow:var(--glass-sh);
   -webkit-backdrop-filter:var(--glass-fx);backdrop-filter:var(--glass-fx)}
-.navpill:hover,.navpill:focus-within{background:linear-gradient(135deg,rgba(255,255,255,.72),rgba(255,255,255,.4));border-color:rgba(255,255,255,.85)}
+.navpill:hover,.navpill:focus-within{background:linear-gradient(135deg,rgba(255,255,255,.38),rgba(255,255,255,.18));border-color:rgba(255,255,255,.6)}
 .glass,.secu-grid>li{border-radius:24px}
 .secu-grid>li::before{border-radius:24px;box-shadow:none}
-.secu-grid>li:hover{border-color:rgba(255,255,255,.95);box-shadow:0 18px 50px rgba(31,52,96,.14),inset 0 1px 0 rgba(255,255,255,.9)}
-.secu-grid .v{border-bottom:1px solid rgba(255,255,255,.6);background-color:rgba(255,255,255,.18)}
-.fld input,.sel select{background:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.8);box-shadow:inset 0 1px 2px rgba(31,52,96,.06)}
-.fld input:hover,.sel select:hover{border-color:rgba(255,255,255,1);background:rgba(255,255,255,.62)}
-.fld input:focus,.sel select:focus{background:rgba(255,255,255,.75)}
-.b-ghost{background:rgba(255,255,255,.45);border:1px solid rgba(255,255,255,.85)}
-.b-ghost:hover{background:rgba(255,255,255,.7);border-color:#fff}
+.secu-grid>li:hover{border-color:rgba(255,255,255,.7);box-shadow:inset 0 1px 0 rgba(255,255,255,.7)}
+.secu-grid .v{border-bottom:1px solid rgba(255,255,255,.35);background-color:transparent}
+.fld input,.sel select{background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.5);box-shadow:none}
+.fld input:hover,.sel select:hover{border-color:rgba(255,255,255,.75);background:rgba(255,255,255,.32)}
+.fld input:focus,.sel select:focus{background:rgba(255,255,255,.42)}
+.b-ghost{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.55)}
+.b-ghost:hover{background:rgba(255,255,255,.34);border-color:rgba(255,255,255,.8)}
 @media(prefers-reduced-motion:reduce){.vault-ciph div,.vault-state i{animation:none}}
 /* rodapé no celular: marca em cima, navegação em duas colunas, contato e idioma lado a lado, base compacta */
 @media(max-width:560px){
