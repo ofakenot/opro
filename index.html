@@ -6,9 +6,9 @@
 <title>OPRO</title>
 <meta name="description" content="OPRO builds the operating layer for a more intelligent, secure and efficient world.">
 <meta name="theme-color" content="#05070B">
-<link rel="icon" href="favicon.ico" sizes="any">
-<link rel="icon" href="favicon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="media/apple-touch-icon.png">
+<link rel="icon" href="favicon.ico?v=20261119" sizes="any">
+<link rel="icon" href="favicon.svg?v=20261119" type="image/svg+xml">
+<link rel="apple-touch-icon" href="media/apple-touch-icon.png?v=20261119">
 <script>document.documentElement.className="js"</script>
 <style>
 :root{
@@ -757,8 +757,8 @@ h1{font-weight:400;font-size:clamp(2.7rem,6vw,5.4rem);line-height:1.04;letter-sp
     <figure class="cine">
       <!-- FOTOS DO PLANETA: desktop em media/opro-planeta.png e celular em media/opro-planeta-mobile.png -->
       <picture>
-        <source id="planetaM" media="(max-width:860px)" srcset="media/opro-planeta-mobile.png">
-        <img id="planeta" src="media/opro-planeta.png" alt="Planet Earth seen from space" data-i18n-alt="world.alt" decoding="async">
+        <source id="planetaM" media="(max-width:860px)" srcset="media/opro-planeta-mobile.png?v=20261119">
+        <img id="planeta" src="media/opro-planeta.png?v=20261119" alt="Planet Earth seen from space" data-i18n-alt="world.alt" decoding="async">
       </picture>
     </figure>
   </section>
@@ -847,7 +847,7 @@ brand.addEventListener('mouseenter',function(){
   function next(){
     var mob=src&&matchMedia(src.media).matches,k=mob?'m':'d';
     if(++tries[k]>=EXT.length)return;
-    if(mob)src.srcset='media/opro-planeta-mobile.'+EXT[tries[k]];else img.src='media/opro-planeta.'+EXT[tries[k]];
+    if(mob)src.srcset='media/opro-planeta-mobile.'+EXT[tries[k]]+'?v=20261119';else img.src='media/opro-planeta.'+EXT[tries[k]]+'?v=20261119';
   }
   img.addEventListener('error',next);
   /* o erro pode ter acontecido antes deste script rodar */
