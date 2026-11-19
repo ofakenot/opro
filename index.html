@@ -241,8 +241,7 @@ h1{font-weight:400;font-size:clamp(2.7rem,6vw,5.4rem);line-height:1.04;letter-sp
 .cine{position:relative}
 .cine img{display:block;width:100%;height:auto}
 /* a foto desce suavemente para a cor do rodapé */
-.cine img{position:relative;z-index:1;height:auto}
-#globe{position:absolute;inset:0;width:100%;height:100%;display:block;-webkit-mask-image:linear-gradient(0deg,rgba(0,0,0,0) 0%,rgba(0,0,0,.06) 6%,rgba(0,0,0,.2) 12%,rgba(0,0,0,.42) 19%,rgba(0,0,0,.68) 26%,rgba(0,0,0,.9) 33%,#000 40%);mask-image:linear-gradient(0deg,rgba(0,0,0,0) 0%,rgba(0,0,0,.06) 6%,rgba(0,0,0,.2) 12%,rgba(0,0,0,.42) 19%,rgba(0,0,0,.68) 26%,rgba(0,0,0,.9) 33%,#000 40%)}
+.cine img{-webkit-mask-image:linear-gradient(0deg,rgba(0,0,0,0) 0%,rgba(0,0,0,.04) 8%,rgba(0,0,0,.14) 16%,rgba(0,0,0,.32) 24%,rgba(0,0,0,.56) 32%,rgba(0,0,0,.8) 40%,rgba(0,0,0,.95) 48%,#000 55%);mask-image:linear-gradient(0deg,rgba(0,0,0,0) 0%,rgba(0,0,0,.04) 8%,rgba(0,0,0,.14) 16%,rgba(0,0,0,.32) 24%,rgba(0,0,0,.56) 32%,rgba(0,0,0,.8) 40%,rgba(0,0,0,.95) 48%,#000 55%)}
 /* inscrição: formulário em vidro fosco, com luzes suaves atrás para o vidro aparecer */
 .join{position:relative;background:transparent;padding:clamp(110px,17vh,180px) var(--gut) 0;text-align:center;overflow-x:clip;overflow-y:visible;isolation:isolate}
 .join::before,.join::after{content:"";position:absolute;z-index:-1;border-radius:50%;filter:blur(70px);pointer-events:none}
@@ -786,11 +785,10 @@ h1{font-weight:400;font-size:clamp(2.7rem,6vw,5.4rem);line-height:1.04;letter-sp
       <p class="sub" data-i18n="world.sub">Wherever there is data, OPRO operates. The same platform, the same intelligence and the same security in any country, in any time zone, at any hour.</p>
     </div>
     <figure class="cine">
-      <!-- planeta girando em WebGL com a textura media/globe/earth-bw.jpg; logo e textos em media/opro-marca*.png -->
-      <canvas id="globe" role="img" aria-label="Planet Earth seen from space" data-i18n-aria="world.alt"></canvas>
+      <!-- FOTOS DO PLANETA: desktop em media/opro-planeta.png e celular em media/opro-planeta-mobile.png -->
       <picture>
-        <source media="(max-width:860px)" srcset="media/opro-marca-mobile.png" width="1080" height="1920">
-        <img id="planeta" src="media/opro-marca.png" alt="" width="1639" height="960" decoding="async">
+        <source id="planetaM" media="(max-width:860px)" srcset="media/opro-planeta-mobile.png">
+        <img id="planeta" src="media/opro-planeta.png" alt="Planet Earth seen from space" data-i18n-alt="world.alt" decoding="async">
       </picture>
     </figure>
   </section>
@@ -874,6 +872,18 @@ brand.addEventListener('mouseenter',function(){
   new IntersectionObserver(function(e,o){if(e[0].isIntersecting){c.classList.add('in');o.disconnect()}},{threshold:.2}).observe(c);
 })();
 
+/* presença global: fotos do planeta em .png; se faltar, tenta webp, jpg e jpeg */
+(function(){var img=document.getElementById('planeta'),src=document.getElementById('planetaM');if(!img)return;
+  var EXT=['png','webp','jpg','jpeg'],tries={d:0,m:0};
+  function next(){
+    var mob=src&&matchMedia(src.media).matches,k=mob?'m':'d';
+    if(++tries[k]>=EXT.length)return;
+    if(mob)src.srcset='media/opro-planeta-mobile.'+EXT[tries[k]];else img.src='media/opro-planeta.'+EXT[tries[k]];
+  }
+  img.addEventListener('error',next);
+  /* o erro pode ter acontecido antes deste script rodar */
+  if(img.complete&&!img.naturalWidth)next();
+})();
 
 /* título com efeito de embaralhar: caracteres aleatórios aparecem e se revelam letra por letra */
 (function(){
@@ -1170,56 +1180,6 @@ document.addEventListener('visibilitychange',function(){if(!document.hidden)tryP
 if('IntersectionObserver' in window)new IntersectionObserver(function(e){onScreen=e[0].isIntersecting;if(onScreen)tryPlay();else if(!v._asImg)v.pause()},{threshold:.05}).observe(v);
 tryPlay();
 
-})();
-
-/* planeta girando: textura real da Terra (preto e branco) projetada numa esfera em WebGL, com luz e atmosfera */
-(function(){
-  var cv=document.getElementById('globe');if(!cv)return;
-  var gl=cv.getContext('webgl',{premultipliedAlpha:true,alpha:true,antialias:false});if(!gl)return;
-  var mq=matchMedia('(max-width:860px)'),still=matchMedia('(prefers-reduced-motion: reduce)').matches;
-  /* posição do planeta em relação à largura da imagem da marca (igual à arte original) */
-  var GEO={d:{cx:.48962,cy:.92101,r:.71659},m:{cx:.48791,cy:2.40842,r:1.37556}};
-  var VS='attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}';
-  var FS=['precision highp float;uniform sampler2D tex;uniform vec2 C;uniform float R,LAM,PHI,DPR;',
-  'const float PI=3.14159265;',
-  'void main(){vec2 q=vec2(gl_FragCoord.x,gl_FragCoord.y)/DPR;vec2 d=(q-C)/R;float rho=length(d);',
-  ' float od=(rho-1.)*R;',
-  ' if(rho>1.){float h=.35*exp(-od/4.)+.12*exp(-od/25.);vec3 c=vec3(232.,233.,236.)/255.;gl_FragColor=vec4(c*h,h);return;}',
-  ' float z=sqrt(max(0.,1.-rho*rho));float c=asin(min(rho,1.));',
-  ' float lat=asin(clamp(cos(c)*sin(PHI)+(rho>0.?d.y*sin(c)*cos(PHI)/rho:0.),-1.,1.));',
-  ' float lon=LAM+atan(d.x*sin(c),rho*cos(c)*cos(PHI)-d.y*sin(c)*sin(PHI));',
-  ' vec2 uv=vec2(fract((lon+PI)/(2.*PI)),(PI*.5-lat)/PI);',
-  ' float t=texture2D(tex,uv).r;',
-  ' vec3 n=vec3(d,z);vec3 L=normalize(vec3(.55,.55,.63));',
-  ' float sh=(.72+.38*pow(max(dot(n,L),0.),.7))*(.78+.22*pow(z,.35));t*=sh;',
-  ' float a=exp(-pow((1.-rho)*R/9.,2.));t=mix(t,238./255.,a*.55);',
-  ' float edge=clamp((1.-rho)*R/1.2+.5,0.,1.);float h=.35;',
-  ' vec3 col=vec3(t,t+1./255.,t+4./255.);gl_FragColor=vec4(col*edge+vec3(232.,233.,236.)/255.*h*(1.-edge),edge+h*(1.-edge));}'].join('\n');
-  function sh(t,src){var s=gl.createShader(t);gl.shaderSource(s,src);gl.compileShader(s);return s;}
-  var pr=gl.createProgram();gl.attachShader(pr,sh(gl.VERTEX_SHADER,VS));gl.attachShader(pr,sh(gl.FRAGMENT_SHADER,FS));gl.linkProgram(pr);
-  if(!gl.getProgramParameter(pr,gl.LINK_STATUS))return;gl.useProgram(pr);
-  var b=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
-  var lp=gl.getAttribLocation(pr,'p');gl.enableVertexAttribArray(lp);gl.vertexAttribPointer(lp,2,gl.FLOAT,false,0,0);
-  var U={};['C','R','LAM','PHI','DPR','tex'].forEach(function(k){U[k]=gl.getUniformLocation(pr,k)});
-  var W,H,dpr,ready=false,lam=-1.6,last=0,vis=true,raf=0;
-  function size(){var r=cv.getBoundingClientRect();dpr=Math.min(window.devicePixelRatio||1,2);W=r.width;H=r.height;cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);gl.viewport(0,0,cv.width,cv.height);}
-  function draw(){if(!ready)return;var g=mq.matches?GEO.m:GEO.d;
-    gl.uniform2f(U.C,g.cx*W,H-g.cy*W);gl.uniform1f(U.R,g.r*W);gl.uniform1f(U.LAM,lam);gl.uniform1f(U.PHI,-.5);gl.uniform1f(U.DPR,dpr);
-    gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);gl.drawArrays(gl.TRIANGLE_STRIP,0,4);}
-  function tick(t){raf=0;if(!vis)return;if(last)lam+=(t-last)*.00007;last=t;draw();raf=requestAnimationFrame(tick);}
-  function start(){if(still){draw();return}if(!raf){last=0;raf=requestAnimationFrame(tick);}}
-  var img=new Image();img.decoding='async';
-  img.onload=function(){var t=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,t);
-    gl.texImage2D(gl.TEXTURE_2D,0,gl.LUMINANCE,gl.LUMINANCE,gl.UNSIGNED_BYTE,img);
-    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
-    gl.uniform1i(U.tex,0);ready=true;size();start();
-    if('IntersectionObserver'in window)new IntersectionObserver(function(e){vis=e[0].isIntersecting;if(vis)start();}).observe(cv);
-    /* redimensiona sempre que a área do planeta mudar de tamanho (ex.: a imagem da marca terminou de carregar) */
-    if('ResizeObserver'in window)new ResizeObserver(function(){size();draw();}).observe(cv);
-    else addEventListener('resize',function(){size();draw();});
-    if(mq.addEventListener)mq.addEventListener('change',function(){size();draw();});};
-  img.src='media/globe/earth-bw.jpg';
 })();
 </script>
 </body>
